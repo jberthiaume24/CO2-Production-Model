@@ -195,4 +195,4 @@ For further insights and details, refer to the generated report or consult the [
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE.md).
