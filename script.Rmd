@@ -1,0 +1,175 @@
+---
+title: "Performance Metrics of Chemical Processing: A Regression Analysis of Belle Ayr Data"
+author: "Joshua Berthiaume"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1. Loading the Data
+
+First, we load the data from a CSV file.
+
+```{r}
+dat <- read.csv("data.csv")
+```
+
+# 2. Building the Multiple Regression Model
+
+Next, we create a multiple regression model to relate CO2 (y) to total solvent (x6) and hydrogen consumption (x7).
+
+```{r}
+model <- lm(y ~ x6 + x7, data = dat)
+summary(model)
+```
+
+Equation of the fitted line:
+Y^ = 2.526+0.019(x6)+2.186(x7)
+
+# 3. Testing the Significance of the Regression Model
+
+We perform an ANOVA to test the overall significance of the regression model.
+
+
+```{r}
+anova(model)
+```
+
+## 3.1 F-Test for Overall Significance
+
+We calculate the p-value and rejection region for the F-test.
+
+```{r}
+# F-statistic p-value
+p_value <- 1 - pf(27.95, 2, 24)
+print(p_value)
+
+# Rejection region
+alpha <- 0.05
+rejection_region <- qf(1 - alpha, 2, 24)
+print(rejection_region)
+```
+
+Interpretation of ANOVA Results:
+
+    Hypotheses:
+        Null Hypothesis (H₀): Both coefficients β₆ and β₇ are zero.
+        Alternative Hypothesis (Hₐ): At least one of the coefficients β₆ or β₇ is not zero.
+
+    F-Test Statistic:
+        The F-statistic is 27.95, which is much greater than the critical value of 3.40.
+        We reject the null hypothesis, indicating that at least one of the predictors is significant.
+
+    Model Fit:
+        R2=0.6996R2=0.6996
+        Adjusted R2=0.6746R2=0.6746
+
+# 4. Testing the Contribution of Individual Predictors
+
+We now test the significance of each predictor (x6 and x7) using t-tests.
+
+## 4.1 Hypothesis Tests for Coefficients
+
+We first calculate the critical value for the t-tests.
+
+```{r}
+n <- nrow(dat)
+k <- 2 + 1
+t_critical <- qt(1 - 0.05 / 2, n - k)
+print(t_critical)
+
+```
+### 4.1.1 For β₆ (Total Solvent)
+
+    Hypothesis:
+        Null Hypothesis (H₀): β₆ = 0
+        Alternative Hypothesis (Hₐ): β₆ ≠ 0
+
+    Test Statistic:
+        The test statistic is 6.74.
+
+    Conclusion:
+        Since 6.74 > ±2.064, we reject the null hypothesis. x6 is significantly related to y.
+
+### 4.1.2 For β₇ (Hydrogen Consumption)
+
+    Hypothesis:
+        Null Hypothesis (H₀): β₇ = 0
+        Alternative Hypothesis (Hₐ): β₇ ≠ 0
+
+    Test Statistic:
+        The test statistic is 2.247.
+
+    Conclusion:
+        Since 2.247 > ±2.064, we reject the null hypothesis. x7 is significantly related to y.
+
+# 5. Confidence Intervals
+## 5.1 95% Confidence Interval for β₆
+
+We construct the 95% confidence interval for β₆.
+```{r}
+confint(model, "x6")
+```
+
+Conclusion: The 95% confidence interval for β₆ is (0.0129, 0.0242).
+## 5.2 90% Confidence Interval for Mean CO2
+
+We calculate the 90% confidence interval for the mean CO2 when x6 = 3200 and x7 = 7.2.
+
+```{r}
+predict(model,interval="confidence",newdata = data.frame(x6=3200,x7=7.2),level=.9)
+```
+Conclusion: The 90% confidence interval on the mean CO2 when x6 = 3200 and x7 = 7.2 is (64.50, 90.57).
+## 5.3 90% Prediction Interval for Actual CO2
+
+We calculate the 90% prediction interval for an actual CO2 value when x6 = 3200 and x7 = 7.2.
+```{r}
+predict(model,interval="prediction",newdata=data.frame(x6=3200,x7=7.2),level=.9)
+```
+Conclusion: The 90% prediction interval for new CO2 is (56.13, 98.94).
+
+# 6. Refitting the Model Using Only x6
+
+We now refit the model using only x6 as the regressor.
+```{r}
+model.2 <-lm(y~x6,data=dat)
+summary(model.2)
+
+anova(model.2)
+```
+
+## 6.1 Testing the Significance of the Reduced Model
+
+We calculate the p-value and rejection region for the reduced model.
+```{r}
+1-pf(43.766,1,25)
+alpha=0.05
+qf(1-alpha,1,25)
+```
+Interpretation:
+
+    F-Test Statistic:
+        Fobs=9.74Fobs​=9.74
+        Since Fobs>Fcritical=4.24Fobs​>Fcritical​=4.24, we reject the null hypothesis.
+
+    Conclusion:
+        The model is effective in explaining the relationship between x6 and y, indicating that x6 is a significant predictor.
+
+# 7. Comparing Models
+## 7.1 95% Confidence Intervals for β₆
+
+We compare the 95% confidence intervals for β₆ in both models.
+```{r}
+confint(model.2,"x6")
+confint(model,"x6")
+```
+
+# Conclusion:
+
+    For Model 2 (x6 only), the 95% CI for β₆ is (0.0134, 0.0254).
+    For Model 1 (x6 and x7), the 95% CI for β₆ is (0.0129, 0.0242).
+    The lengths of the confidence intervals are similar, suggesting that the contribution of x7 is not as significant compared to x6 alone.
