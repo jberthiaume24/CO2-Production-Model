@@ -7,7 +7,7 @@ This README provides a detailed guide on setting up the environment for analyzin
 ## Cloning the Repository
 
 To get started with this project, you need to clone the GitHub repository. You can do this using the following command:
-```
+
 
 ```bash
 git clone https://github.com/jberthiaume24/CO2-Production-Model.git
